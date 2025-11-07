@@ -251,8 +251,12 @@ class TwitchService {
   // Send event to Minecraft server
   async sendToMinecraft(user, eventType, data) {
     try {
+      const base = (user.minecraftServerUrl || '').toString().replace(/\/+$/,'');
+      const targetUrl = `${base}/twitch-event`;
+      console.log(`→ Forwarding ${eventType} to Minecraft at ${targetUrl}`);
+
       const response = await axios.post(
-        `${user.minecraftServerUrl}/twitch-event`,
+        targetUrl,
         {
           eventType: eventType,
           data: data
@@ -266,10 +270,19 @@ class TwitchService {
         }
       );
 
-      console.log(`✅ Sent ${eventType} to Minecraft server for ${user.username}`);
+      console.log(`✅ Sent ${eventType} to Minecraft server for ${user.username} (status ${response.status})`);
       return response.data;
     } catch (error) {
-      console.error(`❌ Error sending to Minecraft server:`, error.message);
+      // Log as much detail as possible to help debug network/SSL/errors from Render logs
+      console.error('❌ Error sending to Minecraft server:', {
+        target: user?.minecraftServerUrl,
+        eventType,
+        message: error?.message,
+        code: error?.code,
+        responseStatus: error?.response?.status,
+        responseData: error?.response?.data
+      });
+      console.error(error && error.stack ? error.stack : error);
       throw error;
     }
   }
