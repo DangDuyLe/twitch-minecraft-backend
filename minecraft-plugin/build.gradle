@@ -1,0 +1,52 @@
+plugins {
+    id 'java'
+    id 'com.github.johnrengelman.shadow' version '8.1.1'
+}
+
+group = 'com.minepath'
+version = '1.0.0'
+sourceCompatibility = '11'
+targetCompatibility = '11'
+
+repositories {
+    mavenCentral()
+    maven {
+        name = 'spigotmc-repo'
+        url = 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/'
+        content {
+            includeGroup 'org.spigotmc'
+            includeGroup 'org.bukkit'
+        }
+    }
+    maven {
+        name = 'sonatype'
+        url = 'https://oss.sonatype.org/content/groups/public/'
+    }
+}
+
+dependencies {
+    compileOnly 'org.spigotmc:spigot-api:1.18.2-R0.1-SNAPSHOT'
+    implementation 'com.google.code.gson:gson:2.10.1'
+}
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}
+
+shadowJar {
+    archiveClassifier.set('')
+    relocate 'com.google.gson', 'com.minepath.twitchplugin.libs.gson'
+}
+
+build {
+    dependsOn shadowJar
+}
+
+processResources {
+    def props = [version: version]
+    inputs.properties props
+    filteringCharset 'UTF-8'
+    filesMatching('plugin.yml') {
+        expand props
+    }
+}

@@ -1,0 +1,24 @@
+name: TwitchStreamPlugin
+version: 1.0.0
+main: com.minepath.twitchplugin.TwitchStreamPlugin
+api-version: 1.18
+author: YourName
+description: Receives Twitch events and spawns entities in Minecraft
+
+commands:
+  twitchtest:
+    description: Test the Twitch plugin functionality
+    usage: /<command> <event_type>
+    permission: twitchplugin.test
+  twitchreload:
+    description: Reload the plugin configuration
+    usage: /<command>
+    permission: twitchplugin.reload
+
+permissions:
+  twitchplugin.test:
+    description: Allows testing the plugin
+    default: op
+  twitchplugin.reload:
+    description: Allows reloading the plugin
+    default: op

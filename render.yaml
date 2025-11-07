@@ -1,0 +1,27 @@
+services:
+  # Backend Node.js Service
+  - type: web
+    name: twitch-minecraft-backend
+    env: node
+    region: oregon
+    plan: free
+    buildCommand: cd twitch-server && npm install
+    startCommand: cd twitch-server && npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3000
+      - key: DATABASE_URL
+        fromDatabase:
+          name: twitch-minecraft-db
+          property: connectionString
+    healthCheckPath: /health
+
+databases:
+  # PostgreSQL Database
+  - name: twitch-minecraft-db
+    databaseName: twitch_minecraft
+    user: twitch_user
+    region: oregon
+    plan: free

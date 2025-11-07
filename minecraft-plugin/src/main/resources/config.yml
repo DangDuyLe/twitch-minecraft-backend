@@ -1,0 +1,80 @@
+# Twitch Stream Plugin Configuration
+
+# HTTP Server Settings
+server:
+  port: 8080
+  host: "0.0.0.0"
+
+# Event Actions Configuration
+# Define what happens for each Twitch event type
+events:
+  subscribe:
+    enabled: true
+    action: "spawn_zombie"
+    amount: 1
+    message: "&6%player% &ehas been targeted by a zombie thanks to &b%user%&e's subscription!"
+    
+  gift_subscription:
+    enabled: true
+    action: "spawn_zombie"
+    amount: 5
+    message: "&6%player% &ehas been swarmed by &c%amount% zombies &ethanks to &b%user%&e's gift subs!"
+    
+  cheer:
+    enabled: true
+    action: "spawn_based_on_bits"
+    # 1 mob per 100 bits
+    bits_per_mob: 100
+    mob_type: "skeleton"
+    message: "&6%player% &ehas been targeted by &c%amount% skeletons &ethanks to &b%user%&e's &6%bits% bits&e!"
+    
+  raid:
+    enabled: true
+    action: "spawn_based_on_viewers"
+    # 1 mob per 10 viewers
+    viewers_per_mob: 10
+    mob_type: "creeper"
+    max_mobs: 20
+    message: "&6%player% &eis being raided by &c%amount% creepers &efrom &b%user%&e's raid with &6%viewers% viewers&e!"
+    
+  follow:
+    enabled: true
+    action: "give_item"
+    item: "GOLDEN_APPLE"
+    amount: 1
+    message: "&b%user% &ehas followed! &6%player% &ereceived a &6Golden Apple&e!"
+
+# Target Player Settings
+target:
+  # How to determine which player to target
+  # Options: "streamer", "random", "most_kills", "least_health"
+  mode: "streamer"
+  
+  # If mode is "streamer", specify the streamer's Minecraft username
+  streamer_username: "YourMinecraftUsername"
+
+# Spawn Settings
+spawn:
+  # Spawn mobs near the player (radius in blocks)
+  radius: 10
+  
+  # Height offset from player (0 = same level)
+  height_offset: 0
+  
+  # Maximum mobs that can be spawned at once (safety limit)
+  max_mobs_per_event: 50
+
+# Effects Settings
+effects:
+  mining_fatigue:
+    # Duration in ticks (20 ticks = 1 second)
+    # Default: 200 ticks = 10 seconds
+    duration: 200
+    # Amplifier (0 = level 1, 1 = level 2, 2 = level 3, etc.)
+    # Higher = slower mining
+    amplifier: 1
+
+# Debug Settings
+debug:
+  enabled: true
+  log_events: true
