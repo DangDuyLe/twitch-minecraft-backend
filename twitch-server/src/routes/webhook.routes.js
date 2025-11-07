@@ -6,6 +6,26 @@ const { requireAuth } = require('../auth');
 
 const router = express.Router();
 
+// Helper: normalize twitch event data keys (accept both camelCase and snake_case)
+function normalizeEventData(type, data) {
+  if (!data || typeof data !== 'object') return data;
+  const out = { ...data };
+
+  // common mappings
+  if (!out.userName) out.userName = out.user_name || out.user_login || out.from_broadcaster_user_name || out.fromBroadcasterName;
+  if (!out.userId) out.userId = out.user_id || out.from_broadcaster_user_id || out.userId;
+  if (!out.followedAt) out.followedAt = out.followed_at || out.followedAt;
+  if (!out.bits) out.bits = out.bits || out.amount;
+
+  // event-specific fallbacks
+  if (type === 'raid') {
+    if (!out.fromBroadcasterName) out.fromBroadcasterName = out.from_broadcaster_user_name || out.fromBroadcasterName || out.userName;
+    if (!out.viewers && out.viewer_count) out.viewers = out.viewer_count;
+  }
+
+  return out;
+}
+
 // Test endpoint - send event directly without Twitch
 router.post('/test', requireAuth, async (req, res) => {
   try {
@@ -23,9 +43,12 @@ router.post('/test', requireAuth, async (req, res) => {
     if (type === 'channel.subscribe') eventType = 'subscribe';
     if (type === 'channel.raid') eventType = 'raid';
 
+    // Normalize incoming test payload so plugin receives expected keys
+    const normalizedData = normalizeEventData(eventType, data);
+
     // Forward to Minecraft server
     try {
-      await twitchService.sendToMinecraft(user, eventType, data);
+      await twitchService.sendToMinecraft(user, eventType, normalizedData);
       console.log(`📊 Test event sent to Minecraft: ${eventType}`);
     } catch (error) {
       console.error(`❌ Failed to send to Minecraft:`, error.message);
@@ -36,8 +59,8 @@ router.post('/test', requireAuth, async (req, res) => {
       id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
       eventType: eventType,
       timestamp: new Date().toISOString(),
-      data: data,
-      userName: data.userName || data.user_name || data.fromBroadcasterName || 'TestUser'
+      data: normalizedData,
+      userName: normalizedData.userName || 'TestUser'
     };
 
     addEvent(user.userId, eventForDashboard);
