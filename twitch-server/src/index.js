@@ -2,17 +2,6 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const database = require('./database.postgres');
-
-// Handle production database URL
-if (process.env.DATABASE_URL && !process.env.DB_HOST) {
-  // Parse DATABASE_URL for Render/Railway
-  const url = new URL(process.env.DATABASE_URL);
-  process.env.DB_HOST = url.hostname;
-  process.env.DB_PORT = url.port;
-  process.env.DB_USER = url.username;
-  process.env.DB_PASSWORD = url.password;
-  process.env.DB_NAME = url.pathname.slice(1);
-}
 const authRoutes = require('./routes/auth.routes');
 const twitchRoutes = require('./routes/twitch.routes');
 const webhookRoutes = require('./routes/webhook.routes');
