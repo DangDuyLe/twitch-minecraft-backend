@@ -101,11 +101,23 @@ router.get('/status', requireAuth, (req, res) => {
   try {
     const user = req.user;
     const hasUserToken = !!user.twitchUserAccessToken && 
+                         !!user.twitchUserTokenExpiry &&
                          user.twitchUserTokenExpiry > Date.now();
+
+    // Safely convert tokenExpiry to ISO string
+    let tokenExpiryISO = null;
+    if (user.twitchUserTokenExpiry && !isNaN(user.twitchUserTokenExpiry)) {
+      try {
+        tokenExpiryISO = new Date(user.twitchUserTokenExpiry).toISOString();
+      } catch (dateError) {
+        console.warn('Invalid token expiry value:', user.twitchUserTokenExpiry);
+        tokenExpiryISO = null;
+      }
+    }
 
     res.json({
       authorized: hasUserToken,
-      tokenExpiry: user.twitchUserTokenExpiry ? new Date(user.twitchUserTokenExpiry).toISOString() : null,
+      tokenExpiry: tokenExpiryISO,
       message: hasUserToken ? 
         'User is authorized' : 
         'User needs to authorize. Call GET /api/oauth/authorize-url'
