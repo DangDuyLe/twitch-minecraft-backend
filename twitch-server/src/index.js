@@ -38,6 +38,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/twitch', twitchRoutes);
 app.use('/api/oauth', oauthRoutes);
 app.use('/api/events', eventsRoutes);
+app.use('/api/webhook', webhookRoutes);
 app.use('/webhook', webhookRoutes);
 
 // Root endpoint
@@ -58,7 +59,10 @@ app.get('/', (req, res) => {
         deleteSubscription: 'DELETE /api/twitch/subscriptions/:id',
         setup: 'POST /api/twitch/setup'
       },
-      webhook: 'POST /webhook/:userId'
+      webhook: {
+        production: 'POST /webhook/:userId',
+        test: 'POST /api/webhook/test'
+      }
     }
   });
 });

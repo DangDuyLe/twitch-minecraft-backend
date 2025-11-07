@@ -2,8 +2,58 @@ const express = require('express');
 const database = require('../database.postgres');
 const twitchService = require('../twitch');
 const { addEvent } = require('./events.routes');
+const { requireAuth } = require('../auth');
 
 const router = express.Router();
+
+// Test endpoint - send event directly without Twitch
+router.post('/test', requireAuth, async (req, res) => {
+  try {
+    const user = req.user;
+    const { type, data } = req.body;
+
+    if (!type || !data) {
+      return res.status(400).json({ error: 'Missing type or data' });
+    }
+
+    // Map event type names
+    let eventType = type;
+    if (type === 'channel.follow') eventType = 'follow';
+    if (type === 'channel.cheer') eventType = 'cheer';
+    if (type === 'channel.subscribe') eventType = 'subscribe';
+    if (type === 'channel.raid') eventType = 'raid';
+
+    // Forward to Minecraft server
+    try {
+      await twitchService.sendToMinecraft(user, eventType, data);
+      console.log(`📊 Test event sent to Minecraft: ${eventType}`);
+    } catch (error) {
+      console.error(`❌ Failed to send to Minecraft:`, error.message);
+    }
+
+    // Store event for web dashboard
+    const eventForDashboard = {
+      id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+      eventType: eventType,
+      timestamp: new Date().toISOString(),
+      data: data,
+      userName: data.userName || data.user_name || data.fromBroadcasterName || 'TestUser'
+    };
+
+    addEvent(user.userId, eventForDashboard);
+    console.log(`📊 Test event stored for dashboard: ${eventType}`);
+
+    res.json({
+      success: true,
+      message: 'Test event processed',
+      eventType: eventType,
+      storedEvent: eventForDashboard
+    });
+  } catch (error) {
+    console.error('Test endpoint error:', error);
+    res.status(500).json({ error: error.message || 'Internal server error' });
+  }
+});
 
 // Webhook endpoint for specific user
 router.post('/:userId', async (req, res) => {
